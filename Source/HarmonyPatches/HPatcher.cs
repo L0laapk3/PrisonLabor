@@ -15,9 +15,11 @@ namespace PrisonLabor.HarmonyPatches
         // For logging purposes, it stores whenever each fragment was completed
         private static Dictionary<string, bool> fragments;
 
+        public static HarmonyInstance harmony;
+
         public static void Init()
         {
-            var harmony = HarmonyInstance.Create("Harmony_PrisonLabor");
+            harmony = HarmonyInstance.Create("Harmony_PrisonLabor");
             try
             {
                 // Clear old data, to avoid misleading info
@@ -43,8 +45,12 @@ namespace PrisonLabor.HarmonyPatches
                         }),
                     new HarmonyMethod(null), new HarmonyMethod(typeof(ForibiddenDropPatch).GetMethod("Postfix2")));
 
+
+                harmony.Patch(AccessTools.Method(typeof(Command_SetPlantToGrow), "WarnAsAppropriate", new Type[] { typeof(ThingDef) }), null, null, new HarmonyMethod(typeof(Patch_Command_SetPlantToGrow), nameof(Patch_Command_SetPlantToGrow.Transpiler)));
+
+
                 // Print out not completed methods
-                foreach(var f in fragments.Keys)
+                foreach (var f in fragments.Keys)
                 {
                     if(!fragments[f])
                         Log.Warning($"PrisonLaborWarning: Harmony patch failed to find \"{f}\" fragment.");
